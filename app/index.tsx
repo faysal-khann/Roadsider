@@ -1,9 +1,8 @@
-import { Text, View } from "react-native";
-import "../global.css"
+import { Redirect } from "expo-router";
+import {  Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 export default function Index() {
   return (
-    <View>
-      <Text>Welc   ome to the app!</Text>
-    </View>
+    <Redirect href="/(root)/(tab)" />
   );
 }
