@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 const index = () => {
   return (
     <SafeAreaView className="p-5">
-      <Text>indeeex</Text>
+      <Text>index</Text>
     </SafeAreaView>
   )
 }
