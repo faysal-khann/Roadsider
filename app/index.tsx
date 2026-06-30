@@ -1,8 +1,15 @@
 import { Redirect } from "expo-router";
-import {  Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useAuth } from "@clerk/expo";
+
 export default function Index() {
-  return (
-    <Redirect href="/(root)/(tab)" />
-  );
+   const { isSignedIn, isLoaded } = useAuth(); // Capital 'L'
+
+   if (!isLoaded) {
+      return null;
+   }
+   if (isSignedIn) {
+    return <Redirect href="/(root)/(tab)" />
+   }
+  return  <Redirect href="/sign-up" />
+  
 }
