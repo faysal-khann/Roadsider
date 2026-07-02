@@ -6,7 +6,7 @@ export default function DashboardLayout() {
   const isAdmin =useUserStore((state) => state.isAdmin)
 
   return (
-
+ 
       <Tabs
       screenOptions={{
         headerShown: false,
