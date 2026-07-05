@@ -18,7 +18,7 @@ const index = () => {
   const [loading, setLoading] = useState(true);
 
   // console.log(featured, recommended);
-  console.log('featured data:', featured);
+  // console.log('featured data:', featured);
 
   const fetchProperties = async () => {
     setLoading(true);

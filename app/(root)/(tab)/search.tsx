@@ -1,12 +1,239 @@
-import { View, Text } from 'react-native'
-import React from 'react'
-
+import FilterModel from "@/components/FilterModel";
+import PropertyCard from "@/components/PropertyCard";
+import { supabase } from "@/lib/supabase";
+import { formatPrice } from "@/lib/utils";
+import { useFilterStore } from "@/store/filterStore";
+import { Property } from "@/types";
+import { Ionicons } from "@expo/vector-icons";
+import { useLocalSearchParams } from "expo-router";
+import React, { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  FlatList,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 const search = () => {
-  return (
-    <View>
-      <Text>search</Text>
-    </View>
-  )
-}
+  const [results, setResults] = useState<Property[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
 
-export default search
+  const { openFilters } = useLocalSearchParams<{ openFilters?: string }>();
+
+  useEffect(() => {
+    if (openFilters === "true") {
+      setShowFilters(true);
+    }
+  }, [openFilters]);
+
+  const {
+    search,
+    type,
+    bedrooms,
+    minPrice,
+    maxPrice,
+    setSearch,
+    setType,
+    setBedrooms,
+    setMinPrice,
+    setMaxPrice,
+  } = useFilterStore();
+  // const activeFilterCount = 9;
+  const activeFilterCount = [
+    type !== null,
+    bedrooms !== null,
+    minPrice !== null,
+    maxPrice !== null,
+  ].filter(Boolean).length;
+
+  useEffect(() => {
+    fetchResults();
+  }, [search, type, bedrooms, minPrice, maxPrice]);
+
+  const fetchResults = async () => {
+    setLoading(true);
+    let query = supabase.from("properties").select("*");
+    if (search) {
+      query = query.ilike("title", `%${search}%`).or(`city.ilike.%${search}%`);
+    }
+    if (type) {
+      query = query.eq("type", type);
+    }
+    if (bedrooms !== null) {
+      query = query.eq("bedrooms", bedrooms);
+    }
+    if (minPrice !== null) {
+      query = query.gte("price", minPrice);
+    }
+    if (maxPrice !== null) {
+      query = query.lte("price", maxPrice);
+    }
+    const { data } = await query.order("created_at", { ascending: false });
+    setResults(data || []);
+    setLoading(false);
+  };
+
+  return (
+    <SafeAreaView className="flex-1 bg-gray-50">
+      <View className="px-5 pt-4 pb-3">
+        <Text className="text-2xl font-bold text-gray-900 mb-4">
+          Find Your Perfect Home
+        </Text>
+      </View>
+
+      <View className="flex-row items-center gap-3 px-5 mb-4">
+        <View
+          className="flex-1 flex-row bg-white items-center rounded-2xl px-4 gap-3 shadow"
+          style={{
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 1 },
+            shadowOpacity: 0.06,
+            shadowRadius: 6,
+            elevation: 2,
+          }}
+        >
+          <Ionicons name="search-outline" size={18} color="#9CA3AF" />
+          <TextInput
+            className="flex-1 py-3 text-gray-800"
+            placeholder="Search by title or city..."
+            placeholderTextColor="#9CA3AF"
+            value={search}
+            onChangeText={setSearch}
+            autoCapitalize="none"
+          />
+
+          {search.length > 0 && (
+            <Ionicons
+              name="close-circle"
+              size={18}
+              color="#9CA3AF"
+              onPress={() => setSearch("")}
+            />
+          )}
+
+          <TouchableOpacity
+            onPress={() => setShowFilters(true)}
+            className={`w-12 h-12 rounded-2xl items-center justify-center ${
+              activeFilterCount > 0 ? "bg-blue-600" : "bg-white"
+            }`}
+
+            style={{
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 1 },
+              shadowOpacity: 0.06,
+              shadowRadius: 6,
+              elevation: 2,
+            }}
+          >
+            <Ionicons
+              name="options-outline"
+              size={20}
+              color={activeFilterCount > 0 ? "#fff" : "#374151"}
+            ></Ionicons>
+            {activeFilterCount > 0 && (
+              <View className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full items-center justify-center">
+                <Text className="text-white text-[9px] font-bold">
+                  {activeFilterCount}
+                </Text>
+              </View>
+            )}
+          </TouchableOpacity>
+        </View>
+
+        {/* Filter Chips */}
+      </View>
+      {activeFilterCount > 0 && (
+        <View className="flex-row flex-wrap gap-2 mt-1 mx-5 ">
+          {type !== null && (
+            <View className="flex-row items-center bg-blue-100 border border-blue-300 rounded-full px-3 py-1 gap-2">
+              <Text className="text-blue-800 text-sm font-medium">{type}</Text>
+              <TouchableOpacity onPress={() => setType(null)}>
+                <Ionicons name="close-circle" size={16} color="#2563EB" />
+              </TouchableOpacity>
+            </View>
+          )}
+          {bedrooms !== null && (
+            <View className="flex-row items-center bg-blue-100 border border-blue-300 rounded-full px-3 py-1 gap-2">
+              <Text className="text-blue-800 text-sm font-medium">
+                {bedrooms} bedrooms
+              </Text>
+              <TouchableOpacity onPress={() => setBedrooms(null)}>
+                <Ionicons name="close-circle" size={16} color="#2563EB" />
+              </TouchableOpacity>
+            </View>
+          )}
+          {(minPrice !== null || maxPrice !== null) && (
+            <View className="flex-row items-center bg-blue-100 border border-blue-300 rounded-full px-3 py-1 gap-2">
+              <Text className="text-blue-800 text-sm font-medium">
+                {minPrice && maxPrice
+                  ? `${formatPrice(minPrice)} - ${formatPrice(maxPrice)}`
+                  : minPrice
+                    ? `From ${formatPrice(minPrice!)}`
+                    : `Up to ${formatPrice(maxPrice!)}`}
+              </Text>
+              <TouchableOpacity
+                onPress={() => {
+                  setMinPrice(null);
+                  setMaxPrice(null);
+                }}
+              >
+                <Ionicons name="close-circle" size={16} color="#2563EB" />
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
+      )}
+
+      {/* Result */}
+
+      <FlatList
+        data={results}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={{ padding: 20, paddingBottom: 100 }}
+        showsVerticalScrollIndicator={false}
+        ListHeaderComponent={
+          <Text className="text-gray-900 text-lg font-bold  px-4 mb-4">
+            {loading ? "Loading..." : `${results.length} properties found`}
+          </Text>
+        }
+        renderItem={({ item }) => (
+          <View className="px-4">
+            <PropertyCard
+              property={item}
+              onUnsave={() => {}}
+              showSave={false}
+            />
+          </View>
+        )}
+
+        ListEmptyComponent={
+          !loading ? (
+            <View className="py-10 items-center ">
+              <Text className="text-gray-400 ">No properties found</Text>
+              <Text className="text-gray-400 text-center mt-2">
+                Try adjusting your search or filter to find what you're looking
+                for.
+              </Text>
+            </View>
+          ) : (
+            <ActivityIndicator
+            size="large"
+            color="#2563EB"
+            className='py20' />
+          )
+        }
+      />
+
+      {/* Filtered Model */}
+      <FilterModel
+        visible={showFilters}
+        onClose={() => setShowFilters(false)}
+      />
+    </SafeAreaView>
+  );
+};
+
+export default search;

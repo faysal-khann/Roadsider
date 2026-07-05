@@ -28,7 +28,7 @@ export default function PropertyCard({
         opacity: property.is_sold ? 0.5 : 1,
       }}
 
-      onPress={() => router.push(`./(root)/property/${property.id}`)}
+      onPress={() => router.push(`../(root)/property/${property.id}`)}
     >
       <Image
         source={{ uri: property.images[0] }}
@@ -54,7 +54,7 @@ export default function PropertyCard({
             {formatPrice(property.price)}
           </Text>
 
-          {!property.is_sold && (
+          {property.is_sold && (
             <View className="bg-red-50 px-2 py-0.5 rounded-full">
               <Text className=" text-red-500 text-xs font-semibold ">Sold</Text>
             </View>
@@ -75,11 +75,11 @@ export default function PropertyCard({
       </View>
 
       <TouchableOpacity className="w-10 items-center pt-3">
-        <Ionicons 
-        name={showSave ? "heart" : "heart-outline"}
-        size={20}
-        color={showSave ? "#EF4444" : "#6B7280"}
-        onPress={onUnsave}
+        <Ionicons
+          name={showSave ? "heart" : "heart-outline"}
+          size={20}
+          color={showSave ? "#EF4444" : "#6B7280"}
+          onPress={onUnsave}
         />
       </TouchableOpacity>
     </TouchableOpacity>
