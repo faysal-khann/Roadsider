@@ -210,6 +210,17 @@ export default function PropertyDetailScreen() {
             </Text>
           </View>
           <TouchableOpacity
+            onPress={() =>
+              router.push({
+                pathname: "/(root)/property/map",
+                params: {
+                  latitude: property.latitude,
+                  longitude: property.longitude,
+                  title: property.title,
+                  address: `${property.address}, ${property.city}`,
+                },
+              })
+            }
             activeOpacity={0.9}
             className="rounded-2xl overflow-hidden mb-6"
             style={{ height: 200 }}
