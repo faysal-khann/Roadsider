@@ -66,11 +66,11 @@ export default function PropertyDetailScreen() {
       </View>
     );
   }
-//   const mapUrl = `https://www.openstreetmap.org/export/embed.html?bbox=${
-//     property.longitude - 0.003
-//   }%2C${property.latitude - 0.003}%2C${property.longitude + 0.003}%2C${
-//     property.latitude + 0.003
-//   }&layer=mapnik&marker=${property.latitude}%2C${property.longitude}`;
+  const mapUrl = `https://www.openstreetmap.org/export/embed.html?bbox=${
+    property.longitude - 0.003
+  }%2C${property.latitude - 0.003}%2C${property.longitude + 0.003}%2C${
+    property.latitude + 0.003
+  }&layer=mapnik&marker=${property.latitude}%2C${property.longitude}`;
 
   const isLongDesc = (property.description.length ?? 0) > 150;
   const displayDesc =
@@ -214,12 +214,12 @@ export default function PropertyDetailScreen() {
             className="rounded-2xl overflow-hidden mb-6"
             style={{ height: 200 }}
           >
-            {/* <WebView
+            <WebView
               source={{ uri: mapUrl }}
               style={{ flex: 1 }}
               scrollEnabled={false}
               pointerEvents="none"
-            /> */}
+            />
           </TouchableOpacity>
         </View>
       </ScrollView>
