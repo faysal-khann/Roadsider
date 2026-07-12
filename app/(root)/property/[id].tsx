@@ -6,10 +6,13 @@ import { useAuth } from "@clerk/expo";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
+import ImageViewing from "react-native-image-viewing";
 import {
+  Alert,
   Dimensions,
   FlatList,
   Image,
+  Linking,
   NativeScrollEvent,
   NativeSyntheticEvent,
   ScrollView,
@@ -30,6 +33,7 @@ export default function PropertyDetailScreen() {
   const { userId } = useAuth();
   const router = useRouter();
   const isAdmin = useUserStore((state) => state.isAdmin);
+  const ADMIN_PHONE = "+8801915791372";
 
   const [property, setProperty] = useState<Property | null>(null);
   const [loading, setLoading] = useState(true);
@@ -57,6 +61,49 @@ export default function PropertyDetailScreen() {
   const onScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const index = Math.round(event.nativeEvent.contentOffset.x / width);
     setActiveIndex(index);
+  };
+
+  const handleContact = () => {
+    const message = `Hello, I am interested in the property "${property?.title}". Could you please provide more details?`;
+    const url = `https://wa.me/${ADMIN_PHONE}?text=${encodeURIComponent(message)}`;
+    Linking.openURL(url);
+  };
+
+  const handleMarkSold = () => {
+    Alert.alert(
+      "Mark as sold",
+      "Are you sure you want to mark this property as sold?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Mark sold",
+          onPress: async () => {
+            await authSupabase
+              .from("properties")
+              .update({ is_sold: true })
+              .eq("id", id);
+            setProperty((prev) => (prev ? { ...prev, is_sold: true } : prev));
+          },
+        },
+      ],
+    );
+  };
+
+  const handleDelete = () => {
+    Alert.alert(
+      "Delete Property",
+      "Are you sure you want to delete this property?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          onPress: async () => {
+            await authSupabase.from("properties").delete().eq("id", id);
+            router.replace("/(root)/tabs");
+          },
+        },
+      ],
+    );
   };
 
   if (!property) {
@@ -231,9 +278,65 @@ export default function PropertyDetailScreen() {
               scrollEnabled={false}
               pointerEvents="none"
             />
+            <View className="absolute bottom-3 right-3 bg-white/90 px-3 py-1 rounded-full flex-row items-center gap-1">
+              <Ionicons name="expand-outline" size={12} color="#374151" />
+              <Text className="text-gray-600 text-xs font-medium">
+                Tap to expand
+              </Text>
+            </View>
           </TouchableOpacity>
+
+          <TouchableOpacity
+            className="flex-row items-center justify-center bg-green-500 px-4 py-3 rounded-full mb-4"
+            onPress={handleContact}
+          >
+            <Ionicons name="logo-whatsapp" size={20} color="white" />
+            <Text className="text-white font-semibold ml-2">Contact Agent</Text>
+          </TouchableOpacity>
+
+          {isAdmin && (
+            <View className="flex-row gap-3">
+              {!property.is_sold && (
+                <TouchableOpacity
+                  className="flex-1 flex-row items-center justify-center gap-2 bg-amber-50 py-4 rounded-2xl border border-amber-200"
+                  onPress={handleMarkSold}
+                >
+                  <Ionicons
+                    name="checkmark-circle-outline"
+                    size={20}
+                    color="#D97706"
+                  />
+                  <Text className="text-amber-600 font-semibold">
+                    Mark as Sold
+                  </Text>
+                </TouchableOpacity>
+              )}
+              <TouchableOpacity
+                className="flex-1 flex-row items-center justify-center gap-2 bg-red-50 py-4 rounded-2xl border border-red-200"
+                onPress={handleDelete}
+              >
+                <Ionicons
+                  name="trash-outline"
+                  size={20}
+                  color="#EF4444"
+                />
+                <Text className="text-red-600 font-semibold">
+                  Delete Property
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
       </ScrollView>
+
+       <ImageViewing
+        images={property.images.map((uri) => ({ uri }))}
+        imageIndex={activeIndex}
+        visible={imageViewerVisible}
+        onRequestClose={() => setImageViewerVisible(false)}
+      />
+
+
     </View>
   );
 }

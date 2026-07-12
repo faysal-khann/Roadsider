@@ -126,7 +126,7 @@ const index = () => {
         }
         renderItem={({ item }) => (
           <View className="px-4">
-            <PropertyCard property={item} onUnsave={() => {}} showSave={false} />
+            <PropertyCard property={item}  />
           </View>
         )}
 
