@@ -59,7 +59,7 @@ const saved = () => {
         </View>
       ) : (
         <FlatList
-          data={null}
+          data={saved}
           keyExtractor={(item) => item.id}
           contentContainerStyle={{ padding: 20, paddingBottom: 100 }}
           showsVerticalScrollIndicator={false}
