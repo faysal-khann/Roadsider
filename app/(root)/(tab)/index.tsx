@@ -18,7 +18,7 @@ const index = () => {
   const [loading, setLoading] = useState(true);
 
   // console.log(featured, recommended);
-  console.log('featured data:', featured);
+  // console.log('featured data:', featured);
 
   const fetchProperties = async () => {
     setLoading(true);
@@ -126,7 +126,7 @@ const index = () => {
         }
         renderItem={({ item }) => (
           <View className="px-4">
-            <PropertyCard property={item} onUnsave={() => {}} showSave={false} />
+            <PropertyCard property={item}  />
           </View>
         )}
 
